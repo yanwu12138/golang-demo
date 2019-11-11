@@ -10,6 +10,10 @@ description: 切片，切片是对数组的一个连续片段的引用，所以�
 		2. 声明切片：var name []type
 		3. 使用make()函数构造切片：make([]type, size, cap)
 	在使用append()函数为切片追加元素时，当空间不足时，切片会以当前容量的2倍来进行扩容
+	当迭代切片时，range关键字会返回两个值，第一个值是当前迭代到的索引位置，第二个值是对应元素值的一份副本
+	range创建了每个元素的副本，而不是直接返回对该元素的引用
+	由于range迭代返回的变量是在迭代过程中根据切片以此赋值的新变量，所以value的地址总是相同的
+	要想获取每个元素的地址，需要使用索引：arr[index]
 */
 package main
 
@@ -20,6 +24,8 @@ func main() {
 	sliceAppend()
 	sliceCopy()
 	sliceDel()
+	superSlice()
+	sliceRange()
 	sliceTest()
 }
 
@@ -99,7 +105,34 @@ func sliceDel() {
 	a = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 0}
 	a = a[:copy(a, a[3:])]
 	fmt.Println("a len: ", len(a), "a cap: ", cap(a), "a value: ", a)
+	// ----- 从中间开始删除
+	a = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 0}
+	a = append(a[:3], a[5:]...)
+	fmt.Println("a len: ", len(a), "a cap: ", cap(a), "a value: ", a)
+	// ----- 从中间开始删除
+	a = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 0}
+	a = a[:3+copy(a[3:], a[5:])]
+	fmt.Println("a len: ", len(a), "a cap: ", cap(a), "a value: ", a)
+	// ----- 从尾部删除
+	a = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 0}
+	a = a[:len(a)-3]
+	fmt.Println("a len: ", len(a), "a cap: ", cap(a), "a value: ", a)
+}
 
+func superSlice() {
+	fmt.Println("--------------------------")
+	a := [][]int{{101, 102}, {1, 2, 3, 4, 5, 6, 7, 8, 9, 0}}
+	// ----- 为第一个切片追加元素
+	a[0] = append(a[0], 103, 104)
+	fmt.Println("a len: ", len(a), "a cap: ", cap(a), "a value: ", a)
+}
+
+func sliceRange() {
+	a := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 0}
+	for index, value := range a {
+		fmt.Println("index: ", index, "    value: ", value)
+		fmt.Printf("Value: %d Value-Addr: %X ElemAddr: %X\n", value, &value, &a[index])
+	}
 }
 
 func sliceTest() {
